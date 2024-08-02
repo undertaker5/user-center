@@ -11,6 +11,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+import static com.cjs.usercenter.contant.UserContant.USER_LOGIN_STATUS;
+
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -43,6 +45,18 @@ public class UserController {
             return null;
         }
         return userService.userLogin(userAccount, password, request);
+    }
+
+    @GetMapping("/current")
+    public User getCurrentUser(HttpServletRequest request) {
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATUS);
+        User currentUser = (User) userObj;
+        if (currentUser == null) {
+            return null;
+        }
+        long userId = currentUser.getId();
+        User user = userService.getById(userId);
+        return userService.getSafetyUser(user);
     }
 
     @GetMapping("/search")

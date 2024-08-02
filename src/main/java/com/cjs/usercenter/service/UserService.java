@@ -42,4 +42,5 @@ public interface UserService extends IService<User> {
 
     boolean deleteUser(long id, HttpServletRequest request);
 
+    User getSafetyUser(User originalUser);
 }

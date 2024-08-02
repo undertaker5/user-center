@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.cjs.usercenter.contant.UserContant.ADMIN_ROLE;
+import static com.cjs.usercenter.contant.UserContant.USER_LOGIN_STATUS;
 
 /**
  * @author 0102
@@ -36,8 +37,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * 盐值
      */
     private static final String SALT = "cjs";
-
-    private static final String USER_LOGIN_STATUS = "userLoginStatus";
 
     @Override
     public long userRegister(String userAccount, String password, String checkPassword) {
@@ -168,6 +167,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     public User getSafetyUser(User originalUser) {
+        if (originalUser==null){
+            return null;
+        }
         User safetyUser = new User();
         safetyUser.setId(originalUser.getId());
         safetyUser.setUserName(originalUser.getUserName());
