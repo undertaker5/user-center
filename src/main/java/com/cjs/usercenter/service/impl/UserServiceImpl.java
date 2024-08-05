@@ -12,6 +12,8 @@ import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,7 +41,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private static final String SALT = "cjs";
 
     @Override
-    public long userRegister(String userAccount, String password, String checkPassword) {
+    public long userRegister(String userAccount, String password, String checkPassword,String planetCode) {
         //1.校验数据
         //校验是否为空
         if (StringUtils.isAnyBlank(userAccount, password, checkPassword)) {
@@ -57,6 +59,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (!checkPassword.equals(password)) {
             return -1;
         }
+        if (planetCode.length()>5){
+            return -1;
+        }
         //不能包含特殊字符
         String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
         Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
@@ -67,6 +72,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_account", userAccount);
         long count = userMapper.selectCount(queryWrapper);
+        if (count > 0) {
+            return -1;
+        }
+        //检验星球编号是否重复
+        queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_account", userAccount);
+        count = userMapper.selectCount(queryWrapper);
         if (count > 0) {
             return -1;
         }
@@ -144,10 +156,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public List<User> searchUser(String userName, HttpServletRequest request) {
         if (!isAdmin(request)) {
-            return null;
+            return new ArrayList<>();
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like("user_name", userName);
+        if (StringUtils.isNotBlank(userName)) {
+            queryWrapper.like("user_name", userName);
+        }
         List<User> userList = userMapper.selectList(queryWrapper);
         return userList.stream().map(user -> {
             return getSafetyUser(user);
@@ -178,11 +192,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safetyUser.setGender(originalUser.getGender());
         safetyUser.setPhone(originalUser.getPhone());
         safetyUser.setEmail(originalUser.getEmail());
+        safetyUser.setPlanetCode(originalUser.getPlanetCode());
         safetyUser.setUserRole(originalUser.getUserRole());
         safetyUser.setUserStatus(originalUser.getUserStatus());
         safetyUser.setCreateTime(originalUser.getCreateTime());
         return safetyUser;
     }
+
+    /**
+     * 用户注销
+     * @param request
+     */
+    @Override
+    public int userLogOut(HttpServletRequest request) {
+        // 移除登录态
+        request.getSession().removeAttribute(USER_LOGIN_STATUS);
+        return 1;
+    }
+
+
 }
 
 

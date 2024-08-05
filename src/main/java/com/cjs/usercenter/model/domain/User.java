@@ -55,6 +55,11 @@ public class User implements Serializable {
     private String email;
 
     /**
+     * 星球编号
+     */
+    private String planetCode;
+
+    /**
      * 用户状态 0 - 正常
      */
     private Integer userStatus;
