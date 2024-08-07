@@ -1,5 +1,7 @@
 package com.cjs.usercenter.controller;
 
+import com.cjs.usercenter.common.BaseResponse;
+import com.cjs.usercenter.common.ResultUtils;
 import com.cjs.usercenter.model.domain.User;
 import com.cjs.usercenter.model.domain.request.UserLoginRequest;
 import com.cjs.usercenter.model.domain.request.UserRegisterRequest;
@@ -21,7 +23,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
             return null;
         }
@@ -32,11 +34,12 @@ public class UserController {
         if (StringUtils.isAnyBlank(userAccount, password, checkPassword, planetCode)) {
             return null;
         }
-        return userService.userRegister(userAccount, password, checkPassword,planetCode);
+        long result = userService.userRegister(userAccount, password, checkPassword,planetCode);
+        return ResultUtils.success(result);
     }
 
     @PostMapping("/login")
-    public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
             return null;
         }
@@ -45,19 +48,21 @@ public class UserController {
         if (StringUtils.isAnyBlank(userAccount, password)) {
             return null;
         }
-        return userService.userLogin(userAccount, password, request);
+        User user = userService.userLogin(userAccount, password, request);
+        return ResultUtils.success(user);
     }
 
     @PostMapping("/logout")
-    public Integer userLogout(HttpServletRequest request) {
+    public BaseResponse<Integer> userLogout(HttpServletRequest request) {
         if (request == null) {
             return null;
         }
-        return userService.userLogOut(request);
+        int result = userService.userLogOut(request);
+        return ResultUtils.success(result);
     }
 
     @GetMapping("/current")
-    public User getCurrentUser(HttpServletRequest request) {
+    public BaseResponse<User> getCurrentUser(HttpServletRequest request) {
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATUS);
         User currentUser = (User) userObj;
         if (currentUser == null) {
@@ -65,19 +70,22 @@ public class UserController {
         }
         long userId = currentUser.getId();
         User user = userService.getById(userId);
-        return userService.getSafetyUser(user);
+        User safetyUser = userService.getSafetyUser(user);
+        return ResultUtils.success(safetyUser);
     }
 
     @GetMapping("/search")
-    public List<User> searchUsers(String userName, HttpServletRequest request) {
-        return userService.searchUser(userName, request);
+    public BaseResponse<List<User>> searchUsers(String userName, HttpServletRequest request) {
+        List<User> userList = userService.searchUser(userName, request);
+        return ResultUtils.success(userList);
     }
 
     @PostMapping("/delete")
-    public boolean deleteUser(@RequestBody long id, HttpServletRequest request) {
+    public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
         if (id <= 0) {
-            return false;
+            return null;
         }
-        return userService.deleteUser(id, request);
+        boolean b = userService.deleteUser(id, request);
+        return ResultUtils.success(b);
     }
 }
