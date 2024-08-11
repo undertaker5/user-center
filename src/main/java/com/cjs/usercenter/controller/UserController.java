@@ -1,7 +1,9 @@
 package com.cjs.usercenter.controller;
 
 import com.cjs.usercenter.common.BaseResponse;
+import com.cjs.usercenter.common.ErrorCode;
 import com.cjs.usercenter.common.ResultUtils;
+import com.cjs.usercenter.exception.BusinessException;
 import com.cjs.usercenter.model.domain.User;
 import com.cjs.usercenter.model.domain.request.UserLoginRequest;
 import com.cjs.usercenter.model.domain.request.UserRegisterRequest;
@@ -25,14 +27,14 @@ public class UserController {
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
-            return null;
+            throw new BusinessException(ErrorCode.NULL_ERROR);
         }
         String userAccount = userRegisterRequest.getUserAccount();
         String password = userRegisterRequest.getPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
         String planetCode = userRegisterRequest.getPlanetCode();
         if (StringUtils.isAnyBlank(userAccount, password, checkPassword, planetCode)) {
-            return null;
+            throw new BusinessException(ErrorCode.NULL_ERROR,"缺少必填信息");
         }
         long result = userService.userRegister(userAccount, password, checkPassword,planetCode);
         return ResultUtils.success(result);
@@ -41,12 +43,12 @@ public class UserController {
     @PostMapping("/login")
     public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
-            return null;
+            throw new BusinessException(ErrorCode.NULL_ERROR);
         }
         String userAccount = userLoginRequest.getUserAccount();
         String password = userLoginRequest.getPassword();
         if (StringUtils.isAnyBlank(userAccount, password)) {
-            return null;
+            throw new BusinessException(ErrorCode.NULL_ERROR,"账号或密码为空");
         }
         User user = userService.userLogin(userAccount, password, request);
         return ResultUtils.success(user);
@@ -55,7 +57,7 @@ public class UserController {
     @PostMapping("/logout")
     public BaseResponse<Integer> userLogout(HttpServletRequest request) {
         if (request == null) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         int result = userService.userLogOut(request);
         return ResultUtils.success(result);
@@ -66,7 +68,7 @@ public class UserController {
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATUS);
         User currentUser = (User) userObj;
         if (currentUser == null) {
-            return null;
+            throw new BusinessException(ErrorCode.NULL_ERROR);
         }
         long userId = currentUser.getId();
         User user = userService.getById(userId);
@@ -83,7 +85,7 @@ public class UserController {
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
         if (id <= 0) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请输入正确id");
         }
         boolean b = userService.deleteUser(id, request);
         return ResultUtils.success(b);

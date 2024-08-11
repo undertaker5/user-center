@@ -2,6 +2,8 @@ package com.cjs.usercenter.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cjs.usercenter.common.ErrorCode;
+import com.cjs.usercenter.exception.BusinessException;
 import com.cjs.usercenter.mapper.UserMapper;
 import com.cjs.usercenter.model.domain.User;
 import com.cjs.usercenter.service.UserService;
@@ -44,42 +46,42 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //1.校验数据
         //校验是否为空
         if (StringUtils.isAnyBlank(userAccount, password, checkPassword)) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"参数为空");
         }
         //检验账户位数
         if (userAccount.length() < 6) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户账户过短");
         }
         //检验密码位数
         if (password.length() < 8) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户密码位数过短");
         }
         //检验密码与确认密码是否一致
         if (!checkPassword.equals(password)) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"两次密码不一致");
         }
         if (planetCode.length()>5){
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"星球编号过长");
         }
         //不能包含特殊字符
         String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
         Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
         if (matcher.find()) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账户包含特殊字符");
         }
         //检验账户是否重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_account", userAccount);
         long count = userMapper.selectCount(queryWrapper);
         if (count > 0) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"该用户名已存在");
         }
         //检验星球编号是否重复
         queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_account", userAccount);
         count = userMapper.selectCount(queryWrapper);
         if (count > 0) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"该编号已存在");
         }
 
         //2.数据加密
@@ -92,7 +94,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setPlanetCode(planetCode);
         int insert = userMapper.insert(user);
         if (insert < 1) {
-            return -1;
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"插入数据出错");
         }
 
         return user.getId();
@@ -103,21 +105,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //1.校验数据
         //校验是否为空
         if (StringUtils.isAnyBlank(userAccount, password)) {
-            return null;
+            throw new BusinessException(ErrorCode.NULL_ERROR,"账户或密码为空");
         }
         //检验账户位数
         if (userAccount.length() < 6) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"账号位数小于6");
         }
         //检验密码位数
         if (password.length() < 8) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码位数小于8");
         }
         //不能包含特殊字符
         String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
         Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
         if (matcher.find()) {
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码包含特殊字符");
         }
 
         //2.数据加密
@@ -130,7 +132,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //用户不存在
         if (user == null) {
             log.info("user login failed,userAccount cannot match password");
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"该用户不存在");
         }
 
         //3.用户脱敏
@@ -146,7 +148,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public boolean deleteUser(long id, HttpServletRequest request) {
         if (!isAdmin(request)) {
-            return false;
+            throw new BusinessException(ErrorCode.NO_AUTH,"无管理员权限");
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", id);
@@ -156,7 +158,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public List<User> searchUser(String userName, HttpServletRequest request) {
         if (!isAdmin(request)) {
-            return new ArrayList<>();
+            throw new BusinessException(ErrorCode.NO_AUTH,"无管理员权限");
         }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(userName)) {
@@ -182,7 +184,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     public User getSafetyUser(User originalUser) {
         if (originalUser==null){
-            return null;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User safetyUser = new User();
         safetyUser.setId(originalUser.getId());
