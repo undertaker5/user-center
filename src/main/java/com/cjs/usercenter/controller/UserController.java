@@ -68,7 +68,7 @@ public class UserController {
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATUS);
         User currentUser = (User) userObj;
         if (currentUser == null) {
-            throw new BusinessException(ErrorCode.NULL_ERROR);
+            throw new BusinessException(ErrorCode.NO_LOGIN);
         }
         long userId = currentUser.getId();
         User user = userService.getById(userId);
