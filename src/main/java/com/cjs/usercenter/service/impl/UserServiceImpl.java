@@ -64,7 +64,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次密码不一致");
         }
         if (planetCode.length() > 5) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "星球编号过长");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邀请码过长");
         }
         //不能包含特殊字符
         String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
@@ -79,12 +79,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (count > 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "该用户名已存在");
         }
-        //检验星球编号是否重复
+        //检验邀请码是否重复
         queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_account", userAccount);
         count = userMapper.selectCount(queryWrapper);
         if (count > 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "该编号已存在");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "该邀请码已使用");
         }
 
         //2.数据加密

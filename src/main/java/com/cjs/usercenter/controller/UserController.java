@@ -33,7 +33,7 @@ public class UserController {
         String password = userRegisterRequest.getPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
         String planetCode = userRegisterRequest.getPlanetCode();
-        if (StringUtils.isAnyBlank(userAccount, password, checkPassword, planetCode)) {
+        if (StringUtils.isAnyBlank(userAccount, password, checkPassword)) {
             throw new BusinessException(ErrorCode.NULL_ERROR,"缺少必填信息");
         }
         long result = userService.userRegister(userAccount, password, checkPassword,planetCode);

@@ -5,7 +5,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 同意返回类
+ * 统一返回类
  *
  * @param <T>
  * @author cjs
