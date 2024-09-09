@@ -92,6 +92,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         //3.插入数据
         User user = new User();
+        user.setUserName(userAccount);
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
         user.setPlanetCode(planetCode);
@@ -135,7 +136,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //用户不存在
         if (user == null) {
             log.info("user login failed,userAccount cannot match password");
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "该用户不存在");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名或密码错误");
         }
 
         //3.用户脱敏
